@@ -596,6 +596,40 @@
   let canvas, ctx, bgCanvas, bgCtx;
 
   /**
+   * [직원 인증] 구글 로그인 → 토큰을 서버가 직접 검증 → 시트 직원 이메일과 대조
+   * (GitHub Pages 구조에서는 서버가 접속자 이메일을 알 수 없어 로그인 토큰으로 확인)
+   */
+  function staffGoogleLogin(subtitle, onOk) {
+    subtitle.innerText = "🔐 구글 계정 선택창에서 직원 계정을 선택해주세요...";
+    try { if (!firebase.apps.length) firebase.initializeApp(firebaseConfig); } catch (e) { }
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    firebase.auth().signInWithPopup(provider).then(result => {
+      const idToken = result && result.credential && result.credential.idToken;
+      if (!idToken) throw new Error('로그인 토큰을 받지 못했습니다.');
+      subtitle.innerText = "🔐 직원 명단 확인 중입니다...";
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res && res.success && res.name) {
+            state.userEmail = res.email;
+            onOk(res.name);
+          } else if (res && res.success) {
+            subtitle.innerText = `🛑 미등록 계정: [${res.email}] 은(는) 직원 명단에 등록되지 않았습니다.
+시트의 이메일 주소를 확인해주세요.`;
+          } else {
+            subtitle.innerText = "🛑 구글 계정 확인에 실패했습니다. 다시 시도해주세요.";
+          }
+        })
+        .withFailureHandler(() => { subtitle.innerText = "🛑 서버 연결에 실패했습니다. 다시 시도해주세요."; })
+        .verifyStaffGoogle(idToken);
+    }).catch(err => {
+      const cancelled = err && (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request');
+      subtitle.innerText = cancelled ? "로그인이 취소되었습니다. 직원 버튼을 다시 눌러주세요."
+        : "🛑 구글 로그인 실패: " + ((err && err.message) || err);
+    });
+  }
+
+  /**
    * [v8.4] 입장 메뉴 전환 시스템 (직원용 하이패스)
    */
   function showSubMenu(type) {
@@ -610,21 +644,11 @@
       back.style.display = 'block';
       subtitle.innerText = "📍 게스트 유형을 선택해주세요";
     } else if (type === 'staff') {
-      // [v8.4 하이패스] 이름 선택 없이 즉시 이메일 대조
-      const userEmail = state.userEmail ? state.userEmail.toLowerCase().trim() : "";
-      let matchedName = null;
-
-      Object.keys(state.staffConfigs).forEach(name => {
-        const allowed = state.staffConfigs[name].email;
-        if (allowed && allowed === userEmail) matchedName = name;
-      });
-
-      if (matchedName) {
+      // [직원 인증] 구글 로그인 후 서버 검증
+      staffGoogleLogin(subtitle, matchedName => {
         alert(`✅ 직원 인증 성공: [${matchedName}] 님 환영합니다.`);
         startMetaverse(matchedName, true);
-      } else {
-        subtitle.innerText = `🛑 미등록 계정: [${userEmail}] 은(는) 직원 명단에 등록되지 않았습니다.\n시트의 이메 주소를 확인해주세요.`;
-      }
+      });
     } else {
       main.style.display = 'flex'; // [v8.61] grid 대신 flex로 변경하여 버튼 한 줄 유지
       guest.style.display = 'none';
@@ -899,21 +923,11 @@
       back.style.display = 'block';
       subtitle.innerText = "📍 게스트 유형을 선택해주세요";
     } else if (type === 'staff') {
-      const userEmail = state.userEmail ? state.userEmail.toLowerCase().trim() : "";
-      let matchedName = null;
-
-      Object.keys(state.staffConfigs).forEach(name => {
-        const allowed = state.staffConfigs[name].email;
-        if (allowed && allowed === userEmail) matchedName = name;
-      });
-
-      if (matchedName) {
+      staffGoogleLogin(subtitle, matchedName => {
         alert(`✅ 직원 인증 성공: [${matchedName}] 님 환영합니다.`);
         closeModal('metaverseEntryModal');
         startMetaverse(matchedName, true);
-      } else {
-        subtitle.innerText = `🛑 미등록 계정: [${userEmail}] 은(는) 직원 명단에 등록되지 않았습니다.\n직원 접속은 메인 화면 상단을 이용해주세요.`;
-      }
+      });
     } else {
       main.style.display = 'flex';
       guest.style.display = 'none';
