@@ -600,6 +600,18 @@
    * (GitHub Pages 구조에서는 서버가 접속자 이메일을 알 수 없어 로그인 토큰으로 확인)
    */
   function staffGoogleLogin(subtitle, onOk) {
+    // [Apps Script 직접 접속용] 서버가 접속자 이메일을 이미 알려준 경우(구글 계정 로그인 상태)는 팝업 없이 시트와 대조
+    try {
+      const srvEmail = state.userEmail ? state.userEmail.toLowerCase().trim() : "";
+      if (srvEmail && state.staffConfigs) {
+        let direct = null;
+        Object.keys(state.staffConfigs).forEach(n => {
+          const c = state.staffConfigs[n];
+          if (c && c.email && c.email === srvEmail) direct = n;
+        });
+        if (direct) { onOk(direct); return; }
+      }
+    } catch (e) { }
     subtitle.innerText = "🔐 구글 계정 선택창에서 직원 계정을 선택해주세요...";
     try { if (!firebase.apps.length) firebase.initializeApp(firebaseConfig); } catch (e) { }
     const provider = new firebase.auth.GoogleAuthProvider();
