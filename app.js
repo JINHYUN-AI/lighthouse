@@ -603,7 +603,10 @@
     subtitle.innerText = "🔐 구글 계정 선택창에서 직원 계정을 선택해주세요...";
     try { if (!firebase.apps.length) firebase.initializeApp(firebaseConfig); } catch (e) { }
     const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
+    // 이전에 성공한 직원 계정을 기억해 두었다가 계정 선택창 없이 바로 통과 (처음 1회만 선택)
+    let hint = '';
+    try { hint = localStorage.getItem('staffEmailHint') || ''; } catch (e) { }
+    provider.setCustomParameters(hint ? { login_hint: hint } : { prompt: 'select_account' });
     firebase.auth().signInWithPopup(provider).then(result => {
       const idToken = result && result.credential && result.credential.idToken;
       if (!idToken) throw new Error('로그인 토큰을 받지 못했습니다.');
@@ -612,8 +615,10 @@
         .withSuccessHandler(res => {
           if (res && res.success && res.name) {
             state.userEmail = res.email;
+            try { localStorage.setItem('staffEmailHint', res.email); } catch (e) { }
             onOk(res.name);
           } else if (res && res.success) {
+            try { localStorage.removeItem('staffEmailHint'); } catch (e) { }
             subtitle.innerText = `🛑 미등록 계정: [${res.email}] 은(는) 직원 명단에 등록되지 않았습니다.
 시트의 이메일 주소를 확인해주세요.`;
           } else {
