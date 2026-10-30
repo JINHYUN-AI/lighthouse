@@ -5422,7 +5422,7 @@
     if (state.mySessionId && db) {
       db.ref('players/' + state.mySessionId).remove().then(() => {
         // [v25.1] GAS 환경 리로드 문제 해결을 위해 명시적 URL 이동 (국장님 제공 주소)
-        const homeUrl = 'https://script.google.com/a/macros/light4u.kr/s/AKfycbzd6I2JFN_xcS4YCl-JkkfVa7JIPgmBrkLmW1q3SbsolUhI4Wf93vaqaTGtn5PfuaJY/exec';
+        const homeUrl = 'https://light4u.kr/'; // GitHub Pages 홈으로 복귀
         if (window.top) {
           window.top.location.href = homeUrl;
         } else {
@@ -5430,12 +5430,12 @@
         }
       }).catch(err => {
         console.error("퇴장 세션 정리 실패:", err);
-        const homeUrl = 'https://script.google.com/a/macros/light4u.kr/s/AKfycbzd6I2JFN_xcS4YCl-JkkfVa7JIPgmBrkLmW1q3SbsolUhI4Wf93vaqaTGtn5PfuaJY/exec';
+        const homeUrl = 'https://light4u.kr/'; // GitHub Pages 홈으로 복귀
         if (window.top) window.top.location.href = homeUrl;
         else location.href = homeUrl;
       });
     } else {
-      const homeUrl = 'https://script.google.com/a/macros/light4u.kr/s/AKfycbzd6I2JFN_xcS4YCl-JkkfVa7JIPgmBrkLmW1q3SbsolUhI4Wf93vaqaTGtn5PfuaJY/exec';
+      const homeUrl = 'https://light4u.kr/'; // GitHub Pages 홈으로 복귀
       if (window.top) window.top.location.href = homeUrl;
       else location.href = homeUrl;
     }
