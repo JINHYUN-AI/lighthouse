@@ -627,6 +627,7 @@
         .withSuccessHandler(res => {
           if (res && res.success && res.name) {
             state.userEmail = res.email;
+            state.staffIdToken = idToken;
             try { localStorage.setItem('staffEmailHint', res.email); } catch (e) { }
             onOk(res.name);
           } else if (res && res.success) {
@@ -5159,7 +5160,7 @@
             toggleGlobalLoader(false);
             alert('❌ 등록 실패: ' + err.message);
           })
-          .appendNotice({ type: category, title: title, content: content, attachment: attachUrl || '' });
+          .appendNotice({ type: category, title: title, content: content, attachment: attachUrl || '' }, state.staffIdToken);
       }
     }
 
@@ -5177,7 +5178,7 @@
               toggleGlobalLoader(false);
               alert('❌ 파일 업로드 에러: ' + err.message);
             })
-            .uploadAttachment({ data: e.target.result.split(',')[1], name: file.name, mimeType: file.type });
+            .uploadAttachment({ data: e.target.result.split(',')[1], name: file.name, mimeType: file.type }, state.staffIdToken);
         }
       };
       reader.readAsDataURL(file);
@@ -5673,7 +5674,7 @@
           name: item.file.name,
           mimeType: item.file.type,
           description: title + (totalFiles > 1 ? ' (' + (idx + 1) + '/' + totalFiles + ')' : '')
-        });
+        }, state.staffIdToken);
     }
     uploadNext(0);
   }
