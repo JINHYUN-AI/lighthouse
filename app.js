@@ -600,18 +600,9 @@
    * (GitHub Pages 구조에서는 서버가 접속자 이메일을 알 수 없어 로그인 토큰으로 확인)
    */
   function staffGoogleLogin(subtitle, onOk) {
-    // [Apps Script 직접 접속용] 서버가 접속자 이메일을 이미 알려준 경우(구글 계정 로그인 상태)는 팝업 없이 시트와 대조
-    try {
-      const srvEmail = state.userEmail ? state.userEmail.toLowerCase().trim() : "";
-      if (srvEmail && state.staffConfigs) {
-        let direct = null;
-        Object.keys(state.staffConfigs).forEach(n => {
-          const c = state.staffConfigs[n];
-          if (c && c.email && c.email === srvEmail) direct = n;
-        });
-        if (direct) { onOk(direct); return; }
-      }
-    } catch (e) { }
+    // [Apps Script 직접 접속용] 서버가 접속자의 직원 이름을 이미 확인해 준 경우는 팝업 없이 통과
+    // (직원 이메일은 공개 데이터에 싣지 않으므로 화면에서 대조하지 않는다)
+    if (state.staffName) { onOk(state.staffName); return; }
     subtitle.innerText = "🔐 구글 계정 선택창에서 직원 계정을 선택해주세요...";
     try { if (!firebase.apps.length) firebase.initializeApp(firebaseConfig); } catch (e) { }
     const provider = new firebase.auth.GoogleAuthProvider();
@@ -627,7 +618,6 @@
         .withSuccessHandler(res => {
           if (res && res.success && res.name) {
             state.userEmail = res.email;
-            state.staffIdToken = idToken;
             try { localStorage.setItem('staffEmailHint', res.email); } catch (e) { }
             onOk(res.name);
           } else if (res && res.success) {
@@ -1887,6 +1877,7 @@
       google.script.run.withSuccessHandler(data => {
         if (!data) return;
         state.userEmail = data.userEmail;
+        state.staffName = data.staffName || '';
         state.staffConfigs = data.staffConfigs;
         state.loadingId = data.loadingId;
 
@@ -5134,57 +5125,6 @@
     openModal('noticeDetailModal');
   }
 
-  // 공지 등록 제출 (23번 방식)
-  function submitNotice() {
-    const title = document.getElementById('nWrite-title').value.trim();
-    const category = document.getElementById('nWrite-category').value;
-    const content = document.getElementById('nWrite-content').value.trim();
-    const fileInput = document.getElementById('nWrite-attachment');
-    if (!title) return alert('제목을 입력해주세요.');
-
-    toggleGlobalLoader(true, '공지사항을 안전하게 등록 중입니다...');
-
-    function doSubmit(attachUrl) {
-      if (typeof google !== 'undefined' && google.script) {
-        google.script.run
-          .withSuccessHandler(() => {
-            toggleGlobalLoader(false);
-            closeModal('writeNoticeModal');
-            document.getElementById('nWrite-title').value = '';
-            document.getElementById('nWrite-content').value = '';
-            document.getElementById('nWrite-attachment').value = '';
-            google.script.run.withSuccessHandler(renderNotices).getNoticeList();
-            alert('✅ 공지사항이 등록되었습니다.');
-          })
-          .withFailureHandler(err => {
-            toggleGlobalLoader(false);
-            alert('❌ 등록 실패: ' + err.message);
-          })
-          .appendNotice({ type: category, title: title, content: content, attachment: attachUrl || '' }, state.staffIdToken);
-      }
-    }
-
-    if (fileInput && fileInput.files.length > 0) {
-      const file = fileInput.files[0];
-      const reader = new FileReader();
-      reader.onload = e => {
-        if (typeof google !== 'undefined' && google.script) {
-          google.script.run
-            .withSuccessHandler(res => {
-              if (res && res.url) doSubmit(res.url);
-              else doSubmit('');
-            })
-            .withFailureHandler(err => {
-              toggleGlobalLoader(false);
-              alert('❌ 파일 업로드 에러: ' + err.message);
-            })
-            .uploadAttachment({ data: e.target.result.split(',')[1], name: file.name, mimeType: file.type }, state.staffIdToken);
-        }
-      };
-      reader.readAsDataURL(file);
-    } else { doSubmit(''); }
-  }
-
   /* [이전 renderGallery 함수는 제거됨 - 상단 initGallery/renderGallery로 통합됨] */
 
   // [전자소식지] 렌더링 (세로형 그리드 방식 복구)
@@ -5392,14 +5332,11 @@
   // 로드 후 데이터 가져오기 실행
   window.addEventListener('DOMContentLoaded', () => {
     loadHomepageData();
-    initDropZone();
   });
 
   /* ════════════════════════
-     [MODAL & UPLOAD LOGIC]
+     [MODAL LOGIC]
   ════════════════════════ */
-  let UPLOAD_FILES = [];
-
   function openExitModal() {
     const modal = document.getElementById('meta-exit-modal');
     if (modal) modal.classList.add('open');
@@ -5580,52 +5517,6 @@
     openModal('footerMenuModal');
   }
 
-  function initDropZone() {
-    const dz = document.getElementById('photo-drop-zone');
-    if (!dz) return;
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
-      dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
-    });
-    dz.addEventListener('dragover', () => dz.classList.add('drag-over'));
-    dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
-    dz.addEventListener('drop', e => {
-      dz.classList.remove('drag-over');
-      handleFileSelect(e.dataTransfer.files);
-    });
-  }
-
-  function handleFileSelect(files) {
-    if (!files.length) return;
-    const newFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
-    if (UPLOAD_FILES.length + newFiles.length > 3) {
-      alert('사진은 최대 3장까지만 업로드 가능합니다.');
-      return;
-    }
-    newFiles.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = e => {
-        UPLOAD_FILES.push({ file: file, data: e.target.result });
-        renderFileList();
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  function renderFileList() {
-    const list = document.getElementById('photo-file-list');
-    list.innerHTML = UPLOAD_FILES.map((item, idx) => `
-      <div class="file-item-chip">
-        <img src="${item.data}">
-        <span class="file-item-remove" onclick="removeFile(${idx})">✕</span>
-      </div>
-    `).join('');
-  }
-
-  function removeFile(idx) {
-    UPLOAD_FILES.splice(idx, 1);
-    renderFileList();
-  }
-
   /**
    * [v22.0] 통합 로딩 스피너 제어 (국장님 요청 반영)
    */
@@ -5639,44 +5530,6 @@
     } else {
       loader.classList.remove('active');
     }
-  }
-
-  function handlePhotoUpload() {
-    const title = document.getElementById('photoTitle').value || '등대의집 활동 사진';
-
-    toggleGlobalLoader(true, '현장의 소중한 기록을 업로드 중입니다... (1/' + UPLOAD_FILES.length + ')');
-    const totalFiles = UPLOAD_FILES.length;
-
-    function uploadNext(idx) {
-      if (idx >= totalFiles) {
-        toggleGlobalLoader(false);
-        closeModal('uploadPhotoModal');
-        UPLOAD_FILES = [];
-        document.getElementById('photoTitle').value = '';
-        renderFileList();
-        loadHomepageData(); // 갤러리 새로고침
-        return;
-      }
-      const item = UPLOAD_FILES[idx];
-      const loaderTxt = document.getElementById('loader-text');
-      if (loaderTxt) loaderTxt.innerText = '현장의 소중한 기록을 업로드 중입니다... (' + (idx + 1) + '/' + totalFiles + ')';
-
-      google.script.run
-        .withSuccessHandler(() => {
-          uploadNext(idx + 1);
-        })
-        .withFailureHandler(err => {
-          toggleGlobalLoader(false);
-          alert('❌ 업로드 중 오류 발생 (' + (idx + 1) + '번째 파일): ' + err.message);
-        })
-        .uploadGalleryPhoto({
-          data: item.data.split(',')[1],
-          name: item.file.name,
-          mimeType: item.file.type,
-          description: title + (totalFiles > 1 ? ' (' + (idx + 1) + '/' + totalFiles + ')' : '')
-        }, state.staffIdToken);
-    }
-    uploadNext(0);
   }
 
   /* ════════════════════════════════════════
