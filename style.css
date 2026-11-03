@@ -6635,6 +6635,24 @@
     transform: scale(0.95);
   }
 
+  /* 카드 한 장만 닫기 */
+  .ptu-popup-overlay.active .ptu-banner-item.ptu-card-closing {
+    animation: ptuCardOut 0.25s ease forwards !important;
+    animation-delay: 0s !important;
+    pointer-events: none;
+  }
+
+  .ptu-popup-overlay.active .ptu-banner-item.ptu-card-closed {
+    display: none;
+  }
+
+  @keyframes ptuCardOut {
+    to {
+      opacity: 0;
+      transform: scale(0.92);
+    }
+  }
+
   /* =========================================================
      [수정] 메타버스 전용 채용/공지 팝업 (Glassmorphism -> Light Mode 가독성 개선)
      ========================================================= */

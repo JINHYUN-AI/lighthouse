@@ -5683,19 +5683,50 @@
    * ★ [v30.0] 평택대 스타일 이미지 배너 팝업 엔진
    * ════════════════════════════════════════ */
   function initMainNoticePopup() {
-    // 1. 오늘 하루 보지 않기 체크
-    const hideUntil = localStorage.getItem('hideMainPopupUntil');
-    if (hideUntil && new Date().getTime() < parseInt(hideUntil)) return;
-
-    // 2. 서버에서 '팝업공지' 전용 시트 데이터 로드
+    // 서버에서 '팝업공지' 전용 시트 데이터 로드 후, 오늘 하루 숨긴 카드를 뺀 나머지만 표시
+    // (전체를 숨겼어도 데이터는 받아 둔다. 퀵 메뉴 POPUP 버튼과 개수 표시에 쓴다.)
     if (typeof google !== 'undefined' && google.script) {
       google.script.run
         .withSuccessHandler(banners => {
           if (!banners || banners.length === 0) return;
-          renderPTUPopup(banners);
+          renderPTUPopup(banners, true);
         })
         .getPopupBannerList();
     }
+  }
+
+  // [카드별 숨김] 카드 하나하나의 '오늘 하루 보지 않기' 기한을 { 카드키: 만료시각 } 형태로 저장한다.
+  const POPUP_HIDE_KEY = 'hideMainPopupCards';
+  const POPUP_HIDE_MS = 24 * 60 * 60 * 1000;
+
+  function popupCardKey(banner) {
+    return String(banner.img) + '|' + String(banner.linkNum);
+  }
+
+  function readPopupHidden() {
+    const now = new Date().getTime();
+    const alive = {};
+    try {
+      const saved = JSON.parse(localStorage.getItem(POPUP_HIDE_KEY) || '{}');
+      Object.keys(saved || {}).forEach(k => {
+        if (typeof saved[k] === 'number' && saved[k] > now) alive[k] = saved[k];
+      });
+    } catch (e) { /* 저장값이 깨졌거나 저장소를 못 쓰면 숨김 없음으로 본다 */ }
+    return alive;
+  }
+
+  function isPopupCardHidden(banner) {
+    return !!readPopupHidden()[popupCardKey(banner)];
+  }
+
+  // 체크칸을 누르는 즉시 그 카드에만 적용한다. 체크를 풀면 숨김도 풀린다.
+  function setPopupCardHidden(idx, hide) {
+    const banner = _cachedBanners && _cachedBanners[idx];
+    if (!banner) return;
+    const hidden = readPopupHidden();
+    if (hide) hidden[popupCardKey(banner)] = new Date().getTime() + POPUP_HIDE_MS;
+    else delete hidden[popupCardKey(banner)];
+    try { localStorage.setItem(POPUP_HIDE_KEY, JSON.stringify(hidden)); } catch (e) { /* 저장소 차단 시 이번 화면에서만 동작 */ }
   }
 
   /**
@@ -5709,21 +5740,14 @@
     const overlay = document.getElementById('main-notice-popup');
     if (!overlay) return;
 
-    // [강화] 연속 2회 rAF로 안정적 스우시 애니메이션 재트리거
+    // 닫았던 카드까지 전부 새로 그려 다시 연다. (연속 2회 rAF로 스우시 애니메이션 재시작)
     const refresh = () => {
+      clearTimeout(_popupCloseTimer);
+      overlay.style.opacity = '';
       overlay.classList.remove('active');
-      const items = overlay.querySelectorAll('.ptu-banner-item');
-      // Step 1: 모든 아이템 애니메이션 즉시 정지
-      items.forEach(item => {
-        item.style.animation = 'none';
-      });
-      // Step 2: 브라우저 레이아웃 재계산 강제 (double rAF)
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          items.forEach(item => {
-            item.style.animation = ''; // 원래 CSS 애니메이션으로 복원
-          });
-          overlay.classList.add('active');
+          renderPTUPopup(_cachedBanners);
         });
       });
     };
@@ -5748,12 +5772,40 @@
   function scrollPtu(dir) {
     const viewport = document.getElementById('ptu-banner-viewport');
     if (viewport) {
-      // 배너 넓이(380) + 간격(25) = 405px
-      viewport.scrollBy({ left: dir * 405, behavior: 'smooth' });
+      // 카드 넓이(PC 380, 휴대폰 300) + 간격(25)만큼 이동
+      const card = viewport.querySelector('.ptu-banner-item:not(.ptu-card-closed)');
+      viewport.scrollBy({ left: dir * ((card ? card.offsetWidth : 380) + 25), behavior: 'smooth' });
     }
   }
 
-  function renderPTUPopup(banners) {
+  // 표시 중인 카드 수에 맞춰 화살표와 정렬을 맞춘다. (카드를 닫을 때도 다시 호출)
+  function syncPopupLayout(count) {
+    const container = document.getElementById('ptu-banner-container');
+    const viewport = document.getElementById('ptu-banner-viewport');
+    if (!container || !viewport) return;
+
+    // 카드가 화면 폭에 다 들어가지 않으면 화살표 등장 (PC는 4장부터, 휴대폰은 2장부터)
+    const first = container.querySelector('.ptu-banner-item:not(.ptu-card-closed):not(.ptu-card-closing)');
+    const cardW = first ? first.offsetWidth : 380;
+    const useArrows = count > 1 && (count * cardW + (count - 1) * 25) > viewport.clientWidth;
+    const arrowL = document.getElementById('ptu-arrow-left');
+    const arrowR = document.getElementById('ptu-arrow-right');
+    if (arrowL) arrowL.style.display = useArrows ? 'flex' : 'none';
+    if (arrowR) arrowR.style.display = useArrows ? 'flex' : 'none';
+
+    // 다 들어가면 컨테이너 안에서 가운데 정렬, 넘치면 왼쪽 정렬 + 무한 증식 너비
+    if (useArrows) {
+      container.style.width = 'max-content';
+      container.style.justifyContent = 'flex-start';
+    } else {
+      container.style.width = '100%';
+      container.style.justifyContent = 'center';
+      viewport.scrollLeft = 0;
+    }
+  }
+
+  // respectHidden: true면 오늘 하루 숨긴 카드는 빼고 그린다(접속 시). 퀵 메뉴로 다시 열 때는 전부 그린다.
+  function renderPTUPopup(banners, respectHidden) {
     _cachedBanners = banners;  // 캐시 저장
     const container = document.getElementById('ptu-banner-container');
     const viewport = document.getElementById('ptu-banner-viewport');
@@ -5763,24 +5815,12 @@
     const badge = document.getElementById('popup-quick-badge');
     if (badge) badge.textContent = banners.length;
 
-    // 팝업이 3개를 초과하면 화살표 등장
-    const useArrows = banners.length > 3;
-    const arrowL = document.getElementById('ptu-arrow-left');
-    const arrowR = document.getElementById('ptu-arrow-right');
-    if (arrowL) arrowL.style.display = useArrows ? 'flex' : 'none';
-    if (arrowR) arrowR.style.display = useArrows ? 'flex' : 'none';
-
-    // 3개 이하면 컨테이너 안에서 가운데 정렬, 이상이면 왼쪽 정렬 + 무한 증식 너비
-    if (useArrows) {
-      container.style.width = 'max-content';
-      container.style.justifyContent = 'flex-start';
-    } else {
-      container.style.width = '100%';
-      container.style.justifyContent = 'center';
-    }
-
     let html = '';
+    let shown = 0;
     banners.forEach((item, idx) => {
+      const hiddenToday = isPopupCardHidden(item);
+      if (respectHidden && hiddenToday) return;
+      shown++;
       html += `
         <div class="ptu-banner-item">
           <div class="ptu-banner-content" onclick="openPopupDetailByNum('${item.linkNum}')">
@@ -5788,20 +5828,42 @@
           </div>
           <div class="ptu-banner-footer">
             <label class="ptu-hide-today-item">
-              <input type="checkbox" class="popup-hide-today-chk"> 오늘 하루 보지 않기
+              <input type="checkbox" class="popup-hide-today-chk" ${hiddenToday ? 'checked' : ''} onchange="setPopupCardHidden(${idx}, this.checked)"> 오늘 하루 보지 않기
             </label>
-            <button class="ptu-close-btn-item" onclick="closeMainPopup()">✕ 닫기</button>
+            <button class="ptu-close-btn-item" onclick="closePopupCard(this)">✕ 닫기</button>
           </div>
         </div>
       `;
     });
     container.innerHTML = html;
+    if (shown === 0) return;  // 전부 오늘 하루 숨김이면 팝업을 띄우지 않는다
 
-    // 팝업 표시
+    // 팝업 표시 (카드 폭을 재야 하므로 표시한 뒤에 정렬을 맞춘다)
     const overlay = document.getElementById('main-notice-popup');
     if (overlay) {
       overlay.classList.add('active');
     }
+    syncPopupLayout(shown);
+  }
+
+  // 카드 한 장만 닫는다. 마지막 카드를 닫으면 팝업 전체를 닫는다.
+  function closePopupCard(btn) {
+    const card = btn.closest('.ptu-banner-item');
+    const container = document.getElementById('ptu-banner-container');
+    if (!card || !container || card.classList.contains('ptu-card-closing')) return;
+
+    const remaining = container.querySelectorAll('.ptu-banner-item:not(.ptu-card-closing):not(.ptu-card-closed)').length - 1;
+    if (remaining <= 0) {
+      closeMainPopup();
+      return;
+    }
+
+    card.classList.add('ptu-card-closing');
+    setTimeout(() => {
+      card.classList.remove('ptu-card-closing');
+      card.classList.add('ptu-card-closed');
+      syncPopupLayout(remaining);
+    }, 250);
   }
 
   function openPopupDetailByNum(num) {
@@ -5822,22 +5884,16 @@
     }
   }
 
+  let _popupCloseTimer = null;
+
+  // 팝업 전체를 닫는다. (마지막 카드를 닫을 때, 카드를 눌러 공지 상세로 이동할 때)
   function closeMainPopup() {
     const overlay = document.getElementById('main-notice-popup');
-    const checkboxes = document.querySelectorAll('.popup-hide-today-chk');
-    let hideToday = false;
-    checkboxes.forEach(chk => {
-      if (chk.checked) hideToday = true;
-    });
-
-    if (hideToday) {
-      const expiry = new Date().getTime() + (24 * 60 * 60 * 1000);
-      localStorage.setItem('hideMainPopupUntil', expiry.toString());
-    }
 
     if (overlay) {
       overlay.style.opacity = '0';
-      setTimeout(() => {
+      clearTimeout(_popupCloseTimer);
+      _popupCloseTimer = setTimeout(() => {
         overlay.classList.remove('active');
         overlay.style.opacity = '';
       }, 400);
