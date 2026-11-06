@@ -17,7 +17,33 @@
   // [v34.6] 워크스페이스 동적 링크 관리
   window.workspaceUrl = "https://workspace.jinhyun.ai.kr";
   window.openWorkspace = function () {
-    window.open(window.workspaceUrl, '_blank');
+    window.openStaffOnlyNotice(window.workspaceUrl, '워크스페이스');
+  };
+
+  // 임직원 전용 링크: 조직 계정이 아닌 분이 누르면 구글 404 화면이 뜨므로, 이동 전에 안내창을 먼저 보여준다.
+  window.openStaffOnlyNotice = function (url, name) {
+    if (!url) return;
+    var old = document.getElementById('staff-only-notice');
+    if (old) old.remove();
+    var ov = document.createElement('div');
+    ov.id = 'staff-only-notice';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:2147483000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#fff;border-radius:16px;max-width:380px;width:100%;padding:28px 24px 20px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.3);font-family:inherit;';
+    box.innerHTML =
+      '<div style="font-size:34px;margin-bottom:8px;">🔒</div>' +
+      '<div style="font-size:18px;font-weight:800;color:#0f172a;margin-bottom:10px;">' + (name || '이 페이지') + '는 임직원 전용입니다</div>' +
+      '<div style="font-size:14px;line-height:1.7;color:#475569;margin-bottom:20px;">등대의집 임직원 계정(@light4u.kr)으로<br>로그인한 브라우저에서 접속해 주세요.<br><span style="font-size:12px;color:#94a3b8;">다른 계정으로 접속하면 "404 오류" 화면이 나옵니다.</span></div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button type="button" id="staff-notice-close" style="flex:1;padding:12px;border:1px solid #cbd5e1;background:#fff;color:#475569;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">닫기</button>' +
+      '<button type="button" id="staff-notice-go" style="flex:1;padding:12px;border:0;background:#1e293b;color:#fff;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">접속하기</button>' +
+      '</div>';
+    ov.appendChild(box);
+    document.body.appendChild(ov);
+    var close = function () { ov.remove(); };
+    ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+    box.querySelector('#staff-notice-close').onclick = close;
+    box.querySelector('#staff-notice-go').onclick = function () { window.open(url, '_blank'); close(); };
   };
 
   /* ════════════════════════════════════════════════════════════
@@ -1823,7 +1849,7 @@
   }
 
   function openWorkspace() {
-    if (window.workspaceUrl) window.open(window.workspaceUrl, '_blank');
+    window.openStaffOnlyNotice(window.workspaceUrl, '워크스페이스');
   }
 
   function closeChat() {
