@@ -5130,6 +5130,47 @@
     paginContainer.innerHTML = html;
   }
 
+  // 공지 첨부파일: 한 셀에 링크가 여러 개면 모두 표시하고, 드라이브 파일은 실제 파일 이름으로 다운로드 링크를 만든다.
+  function renderNoticeAttachments(attachEl, raw) {
+    attachEl.innerHTML = '';
+    const urls = String(raw || '').split(/[\s,;]+/).filter(function (u) { return /^https?:/i.test(u); });
+    if (!urls.length) return;
+    const hr = document.createElement('hr');
+    hr.style.cssText = 'margin:20px 0; border-color:#eee';
+    attachEl.appendChild(hr);
+    const token = String(Date.now()) + Math.random();
+    attachEl.dataset.token = token;
+    const links = [];
+    const ids = [];
+    urls.forEach(function (u, i) {
+      const m = u.match(/\/d\/([-\w]{20,})/) || u.match(/[?&]id=([-\w]{20,})/);
+      const id = (m && u.indexOf('drive.google.com') >= 0) ? m[1] : '';
+      const isImg = /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(u) || u.indexOf('lh3.googleusercontent') >= 0;
+      if (isImg) {
+        const img = document.createElement('img');
+        img.src = u;
+        img.style.cssText = 'max-width:100%; border-radius:12px; margin-top:10px; display:block;';
+        attachEl.appendChild(img);
+        return;
+      }
+      const a = document.createElement('a');
+      a.href = id ? ('https:\/\/drive.google.com/uc?export=download&id=' + id) : u;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.style.cssText = 'display:block; color:var(--jh-blue); font-weight:700; margin:6px 0; word-break:break-all;';
+      a.textContent = urls.length > 1 ? ('📎 첨부파일 ' + (i + 1)) : '📎 첨부 파일 다운로드';
+      attachEl.appendChild(a);
+      if (id) { links.push({ id: id, a: a }); ids.push(id); }
+    });
+    if (!ids.length) return;
+    try {
+      google.script.run.withSuccessHandler(function (names) {
+        if (attachEl.dataset.token !== token || !names) return;
+        links.forEach(function (l) { if (names[l.id]) l.a.textContent = '📎 ' + names[l.id]; });
+      }).getAttachmentNames(ids);
+    } catch (e) { /* 이름 조회 실패 시 기본 문구 유지 */ }
+  }
+
   // 공지 상세 팝업 열기
   function openNoticeDetail(idx) {
     const item = ALL_NOTICES_DATA[idx];
@@ -5140,14 +5181,7 @@
     document.getElementById('nDetail-meta').innerText = '구분: ' + (item.type || '-') + ' | 게시일: ' + (item.date || '-');
     document.getElementById('nDetail-content').innerText = item.content || '상세 내용이 없습니다.';
     const attachEl = document.getElementById('nDetail-attachment');
-    if (item.attachment && item.attachment !== 'null' && item.attachment !== '') {
-      const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(item.attachment) || item.attachment.indexOf('lh3.googleusercontent') >= 0;
-      if (isImg) {
-        attachEl.innerHTML = `<hr style="margin:20px 0; border-color:#eee"><img src="${item.attachment}" style="max-width:100%; border-radius:12px; margin-top:10px;">`;
-      } else {
-        attachEl.innerHTML = `<hr style="margin:20px 0; border-color:#eee"><a href="${item.attachment}" target="_blank" style="color:var(--jh-blue); font-weight:700;">📎 첨부 파일 다운로드</a>`;
-      }
-    } else { attachEl.innerHTML = ''; }
+    if (item.attachment && item.attachment !== 'null') { renderNoticeAttachments(attachEl, item.attachment); } else { attachEl.innerHTML = ''; }
     openModal('noticeDetailModal');
   }
 
