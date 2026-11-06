@@ -7540,3 +7540,20 @@
       font-size: 11px !important;
     }
   }
+
+  /* 공지사항 페이지 번호: 밝은 배경에서 2번 이후가 안 보이던 문제 수정(2026-11-06) */
+  #notice-pagination .page-num-btn {
+    background: #fff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+  }
+  #notice-pagination .page-num-btn:hover {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-color: #93c5fd;
+  }
+  #notice-pagination .page-num-btn.active {
+    background: var(--jh-blue);
+    color: #fff;
+    border-color: var(--jh-blue);
+  }
