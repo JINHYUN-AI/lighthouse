@@ -1886,7 +1886,16 @@
     if (!logWindow) return;
     const entry = document.createElement('div');
     entry.className = 'chat-entry';
-    entry.innerHTML = `<span class="user-name" style="color: ${getUserColor(name)}">${name}:</span><span class="msg-text">${msg}</span>`;
+    // 다른 접속자가 보낸 이름·메시지는 글자로만 표시한다(HTML 실행 차단).
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'user-name';
+    nameSpan.style.color = getUserColor(name);
+    nameSpan.textContent = name + ':';
+    const msgSpan = document.createElement('span');
+    msgSpan.className = 'msg-text';
+    msgSpan.textContent = msg;
+    entry.appendChild(nameSpan);
+    entry.appendChild(msgSpan);
     logWindow.appendChild(entry);
     logWindow.scrollTop = logWindow.scrollHeight;
     if (logWindow.childNodes.length > 50) logWindow.removeChild(logWindow.firstChild);
@@ -3129,7 +3138,17 @@
     if (!container) return;
     const toast = document.createElement('div');
     toast.className = 'join-toast';
-    toast.innerHTML = `<span class="toast-avatar">👤</span><span><b>${name}</b>님이 입장했습니다</span>`;
+    // 이름은 다른 접속자가 정한 값이므로 글자로만 표시한다(HTML 실행 차단).
+    const avSpan = document.createElement('span');
+    avSpan.className = 'toast-avatar';
+    avSpan.textContent = '👤';
+    const txtSpan = document.createElement('span');
+    const bTag = document.createElement('b');
+    bTag.textContent = name;
+    txtSpan.appendChild(bTag);
+    txtSpan.appendChild(document.createTextNode('님이 입장했습니다'));
+    toast.appendChild(avSpan);
+    toast.appendChild(txtSpan);
     container.appendChild(toast);
     // 애니메이션 시작
     setTimeout(() => toast.classList.add('toast-show'), 10);
