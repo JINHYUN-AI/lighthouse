@@ -6538,14 +6538,29 @@
       if (err) err.innerText = '비밀번호를 입력해주세요.';
       return;
     }
-    if (val !== 'emdeodmlwlq4495') {
-      if (err) err.innerText = '⛔ 비밀번호가 일치하지 않습니다.';
-      if (input) { input.value = ''; input.focus(); }
+    if (!(typeof google !== 'undefined' && google.script && google.script.run)) {
+      if (err) err.innerText = '서버에 연결할 수 없습니다.';
       return;
     }
-    currentAdminPassword = val;
-    closeAdminAuthModal();
-    openAdminDashboard();
+    if (err) err.innerText = '확인 중...';
+    // 비밀번호 검증은 서버에서만 한다(화면 코드에는 비밀번호를 두지 않는다).
+    google.script.run
+      .withSuccessHandler(res => {
+        if (!res || !res.success) {
+          if (err) err.innerText = '⛔ 비밀번호가 일치하지 않습니다.';
+          if (input) { input.value = ''; input.focus(); }
+          return;
+        }
+        if (err) err.innerText = '';
+        currentAdminPassword = val;
+        if (input) input.value = '';
+        closeAdminAuthModal();
+        openAdminDashboard();
+      })
+      .withFailureHandler(() => {
+        if (err) err.innerText = '서버 통신 에러가 발생했습니다.';
+      })
+      .getMonitoringLogs(val);
   }
 
   function openAdminDashboard() {
