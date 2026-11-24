@@ -6694,10 +6694,12 @@
     if (table) table.style.display = 'table';
     if (empty) empty.style.display = 'none';
 
+    // 접속기록 값은 방문자가 보낸 값이므로 HTML로 해석되지 않게 글자로만 표시한다(저장형 XSS 차단, 2026-11-24).
+    const escLog = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     tbody.innerHTML = filtered.map(row => {
-      const isMeta = row.accessType && row.accessType.includes('메타버스');
-      const isStaff = row.userType && row.userType.includes('직원');
-      const isMob = row.device && (row.device.includes('Mobile') || row.device.includes('Tablet'));
+      const isMeta = row.accessType && String(row.accessType).includes('메타버스');
+      const isStaff = row.userType && String(row.userType).includes('직원');
+      const isMob = row.device && (String(row.device).includes('Mobile') || String(row.device).includes('Tablet'));
       const accessBadge = isMeta
         ? '<span class="log-badge badge-meta">메타버스</span>'
         : '<span class="log-badge badge-home">홈페이지</span>';
@@ -6705,18 +6707,18 @@
         ? '<span class="log-badge badge-staff">직원</span>'
         : '<span class="log-badge badge-guest">일반</span>';
       const devBadge = isMob
-        ? `<span class="log-badge badge-mobile">${row.device}</span>`
-        : `<span class="log-badge badge-pc">${row.device || 'PC'}</span>`;
+        ? `<span class="log-badge badge-mobile">${escLog(row.device)}</span>`
+        : `<span class="log-badge badge-pc">${escLog(row.device || 'PC')}</span>`;
       return `<tr>
-        <td style="color:#64748b;font-family:monospace;font-size:0.8rem;">${row.timestamp || '-'}</td>
+        <td style="color:#64748b;font-family:monospace;font-size:0.8rem;">${escLog(row.timestamp || '-')}</td>
         <td>${accessBadge}</td>
         <td>${userBadge}</td>
-        <td style="font-weight:600;color:#0f172a;">${row.account || '-'}</td>
+        <td style="font-weight:600;color:#0f172a;">${escLog(row.account || '-')}</td>
         <td>${devBadge}</td>
-        <td style="color:#475569;">${row.browserOs || '-'}</td>
-        <td style="color:#2563eb;">${row.referrer || '-'}</td>
-        <td style="font-weight:700;text-align:right;">${row.stayDuration ? row.stayDuration + 's' : '-'}</td>
-        <td style="color:#334155;">${row.notes || '-'}</td>
+        <td style="color:#475569;">${escLog(row.browserOs || '-')}</td>
+        <td style="color:#2563eb;">${escLog(row.referrer || '-')}</td>
+        <td style="font-weight:700;text-align:right;">${row.stayDuration ? escLog(row.stayDuration) + 's' : '-'}</td>
+        <td style="color:#334155;">${escLog(row.notes || '-')}</td>
       </tr>`;
     }).join('');
   }
