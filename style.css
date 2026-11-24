@@ -7563,3 +7563,20 @@
     color: #fff;
     border-color: var(--jh-blue);
   }
+
+  /* 챗봇 개인정보 입력 주의 안내 */
+  .chat-privacy-note {
+    font-size: 11px;
+    color: #868e96;
+    padding: 2px 14px 8px;
+    line-height: 1.4;
+    text-align: center;
+  }
+
+  .meta-ai-privacy-note {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 6px 16px 10px;
+    line-height: 1.4;
+    text-align: center;
+  }

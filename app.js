@@ -5290,7 +5290,7 @@
         if (loadingEl) {
           const bubble = loadingEl.parentElement;
           bubble.classList.remove('loading-bubble'); // 로딩 클래스 제거
-          bubble.innerHTML = response;
+          bubble.innerHTML = renderBotHtml_(response);
         }
       })
       .withFailureHandler(function (err) {
@@ -5304,25 +5304,33 @@
       .processChatbotMessage(msg);
   }
 
+  // 챗봇 표시용: 문자열을 HTML로 해석하지 않도록 먼저 이스케이프한다(챗봇 답변·입력의 코드 실행 차단, 2026-11-24).
+  function escapeChatHtml_(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  // 봇 답변: 이스케이프한 뒤 https 링크와 줄바꿈만 살린다.
+  function renderBotHtml_(text) {
+    let processed = escapeChatHtml_(text);
+    // 1. [텍스트](URL) 패턴 (공백/줄바꿈 허용)
+    processed = processed.replace(/\[([^\]]+)\]\s*\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>');
+    // 2. [텍스트: URL] 패턴 (콜론 구분, 공백/줄바꿈 허용)
+    processed = processed.replace(/\[([^\]:]+):\s*[\s\n]*(https?:\/\/[^\s\]]+)[\s\n]*\]/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>');
+    // 3. 생 URL 탐지 (앞서 변환된 <a> 태그 제외)
+    processed = processed.replace(/(?<!href=")(?<!">)(https?:\/\/[^\s<\]\)\n]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>');
+    return processed.replace(/\n/g, '<br>');
+  }
+
   function appendChat(role, text, isLoading = false) {
     const container = document.getElementById('chatbot-messages');
     if (!container) return;
     const div = document.createElement('div');
     div.className = 'chat-bubble ' + role + (isLoading ? ' loading-bubble' : '');
 
-    // [v34.15] 강력한 링크 탐지 및 줄바꿈 처리
-    let processed = text;
-    if (role === 'bot' && !isLoading) {
-      // 1. [텍스트](URL) 패턴 (공백/줄바꿼 허용)
-      processed = processed.replace(/\[([^\]]+)\]\s*\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" class="chat-link">$1</a>');
-      // 2. [텍스트: URL] 패턴 (콜론 구분, 공백/줄바꿼 허용)
-      processed = processed.replace(/\[([^\]:]+):\s*[\s\n]*(https?:\/\/[^\s\]]+)[\s\n]*\]/g, '<a href="$2" target="_blank" class="chat-link">$1</a>');
-      // 3. 생 URL 탐지 (앞서 변환된 <a> 태그 제외)
-      processed = processed.replace(/(?<!href=")(?<!">)(https?:\/\/[^\s<\]\)\n]+)/g, '<a href="$1" target="_blank" class="chat-link">$1</a>');
-
-      // 줄바꿼 변환
-      processed = processed.replace(/\n/g, '<br>');
-    }
+    // 로딩 표시는 내부에서 만든 HTML, 나머지는 이스케이프한 뒤 표시(저장형·반사형 XSS 차단)
+    let processed;
+    if (isLoading) processed = text;
+    else if (role === 'bot') processed = renderBotHtml_(text);
+    else processed = escapeChatHtml_(text);
 
     div.innerHTML = processed;
     container.appendChild(div);
@@ -6375,7 +6383,7 @@
       div.innerHTML = '<span class="ai-typing"><span></span><span></span><span></span></span>';
     } else {
       // 줄바꿈 처리
-      div.innerHTML = String(text).replace(/\n/g, '<br>');
+      div.innerHTML = escapeChatHtml_(text).replace(/\n/g, '<br>');
     }
 
     log.appendChild(div);
