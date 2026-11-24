@@ -118,12 +118,23 @@
         notes: logData.notes || ""
       };
 
-      google.script.run
-        .withSuccessHandler(function (res) { })
-        .withFailureHandler(function (err) {
-          console.warn("모니터링 로그 전송 실패 (무시):", err);
-        })
-        .recordMonitoringLog(payload);
+      const go = function (token) {
+        payload.staffToken = token || '';
+        google.script.run
+          .withSuccessHandler(function (res) { })
+          .withFailureHandler(function (err) {
+            console.warn("모니터링 로그 전송 실패 (무시):", err);
+          })
+          .recordMonitoringLog(payload);
+      };
+      // 직원 표시는 서버가 구글 로그인 토큰을 확인한 경우에만 붙는다(2026-11-24). 토큰은 약 1시간 뒤 만료되므로 가능하면 새로 받는다.
+      let tokenPromise = null;
+      try {
+        const cu = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+        if (cu && !cu.isAnonymous) tokenPromise = cu.getIdToken();
+      } catch (e) { }
+      if (tokenPromise) tokenPromise.then(go, function () { go(state.staffIdToken); });
+      else go(state.staffIdToken);
     },
 
     logHomepageAccess: function () {
@@ -644,6 +655,7 @@
         .withSuccessHandler(res => {
           if (res && res.success && res.name) {
             state.userEmail = res.email;
+            state.staffIdToken = idToken; // 접속기록에서 서버가 직원 여부를 확인하는 데 쓴다(메모리에만 보관, 저장하지 않음)
             try { localStorage.setItem('staffEmailHint', res.email); } catch (e) { }
             onOk(res.name);
           } else if (res && res.success) {
