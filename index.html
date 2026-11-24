@@ -2,7 +2,12 @@
 <html>
 
 <head>
-  
+  <!-- http로 들어오면 즉시 https로 넘긴다. GitHub Pages의 Enforce HTTPS가 효력을 내기 전까지의 보완책(2026-11-24). 서버 리다이렉트가 동작하면 지워도 된다. -->
+  <script>
+    if (location.protocol === 'http:' && /(^|\.)light4u\.kr$/.test(location.hostname)) {
+      location.replace('https://' + location.host + location.pathname + location.search + location.hash);
+    }
+  </script>
   <!-- 최소 보안 헤더(meta): 플러그인 차단, base 태그 고정, 이탈 시 참조 주소 축소. 프레임 삽입 제한은 meta로 불가(GitHub Pages 한계) -->
   <meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">
   <meta name="referrer" content="strict-origin-when-cross-origin">
