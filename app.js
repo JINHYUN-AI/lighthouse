@@ -5504,14 +5504,150 @@
     if (type === 'privacy') {
       title = '개인정보처리방침';
       content = `
-        <div style="font-size:14px; color:#555; line-height:1.7;">
-          <h4 style="color:#111; margin-bottom:10px;">1. 개인정보의 처리 목적</h4>
-          <p>등대의집은 개인정보를 고유 목적 사업 수행 및 원활한 상담 제공을 위해 처리합니다. 처리한 개인정보는 목적 이외의 용도로는 사용되지 않으며 이용 목적이 변경될 시에는 사전동의를 구할 예정입니다.</p>
-          <h4 style="color:#111; margin-top:20px; margin-bottom:10px;">2. 처리하는 개인정보의 항목</h4>
-          <p>성명, 연락처, 이메일 주소 등 상담 및 서비스 제공을 위해 필요한 최소한의 개인정보를 수집하고 있습니다.</p>
-          <h4 style="color:#111; margin-top:20px; margin-bottom:10px;">3. 개인정보의 보유 및 이용기간</h4>
-          <p>이용자의 개인정보는 원칙적으로 개인정보의 수집 및 이용목적이 달성되면 지체 없이 파기합니다.</p>
-          <p style="margin-top:20px; font-weight:700;">※ 자세한 내용은 관내 게시된 상세 방침을 참고해 주시기 바랍니다.</p>
+        <div style="font-size:14px; color:#555; line-height:1.75; word-break:keep-all;">
+          <p style="font-size:15px; color:#111; font-weight:700; margin:0 0 6px;">사회복지법인 예맥재단 등대의집 개인정보 처리방침</p>
+          <p style="margin:0 0 14px;">사회복지법인 예맥재단 등대의집(이하 “등대의집”)은 홈페이지(light4u.kr)와 메타버스·AI 챗봇 서비스(이하 “홈페이지”)를 운영하면서 정보주체의 자유와 권리 보호를 위해 「개인정보 보호법」 및 관계 법령이 정한 바를 준수하여 적법하게 개인정보를 처리하고 안전하게 관리하고 있습니다. 이에 「개인정보 보호법」 제30조에 따라 개인정보의 처리와 보호에 관한 절차 및 기준을 안내하고, 관련 고충을 신속하고 원활하게 처리할 수 있도록 다음과 같이 개인정보 처리방침을 수립·공개합니다.</p>
+          <p style="margin:0 0 6px; color:#111; font-weight:700;">시행일: 2026년 11월 24일</p>
+
+          <h4 style="color:#111; margin-top:22px; margin-bottom:8px;">1. 개인정보의 처리 목적</h4>
+          <p>등대의집은 다음의 목적을 위하여 개인정보를 처리합니다. 처리한 개인정보는 목적 이외의 용도로 사용하지 않으며, 이용 목적이 변경되는 경우에는 「개인정보 보호법」 제18조에 따라 별도의 동의를 받는 등 필요한 조치를 이행합니다.</p>
+          <ul style="margin:6px 0 0 18px; padding:0;">
+            <li>홈페이지 서비스 제공 및 안정적 운영: 이용 현황 파악, 오류 확인과 서비스 개선, 접속 통계</li>
+            <li>메타버스 서비스 제공: 입장 시 선택한 역할과 표시 이름, 위치, 채팅 메시지를 같은 공간의 다른 이용자에게 실시간으로 보여 주기 위함</li>
+            <li>직원 확인: 직원이 메타버스에 입장할 때 구글 계정으로 직원 여부를 확인하기 위함</li>
+            <li>AI 챗봇 안내: 이용자가 입력한 질문에 시설 안내 답변을 제공하기 위함</li>
+            <li>신청서 접수 연결: 후원·자원봉사 신청서(구글폼) 링크 제공 (신청서의 개인정보 처리는 5항 참고)</li>
+          </ul>
+
+          <h4 style="color:#111; margin-top:22px; margin-bottom:8px;">2. 처리하는 개인정보의 항목</h4>
+          <p>등대의집은 목적 달성에 필요한 최소한의 개인정보만 처리하며, 처리 항목은 다음과 같습니다.</p>
+          <table style="width:100%; border-collapse:collapse; font-size:13px; margin:8px 0;">
+            <thead><tr style="background:#f1f3f5; color:#111;"><th style="border:1px solid #dee2e6; padding:6px 8px; text-align:left;">구분</th><th style="border:1px solid #dee2e6; padding:6px 8px; text-align:left;">처리 항목</th><th style="border:1px solid #dee2e6; padding:6px 8px; text-align:left;">수집 방법</th></tr></thead>
+            <tbody>
+              <tr><td style="border:1px solid #dee2e6; padding:6px 8px;">홈페이지 접속</td><td style="border:1px solid #dee2e6; padding:6px 8px;">접속 일시, 접속 구분(홈페이지/메타버스), 방문자 유형(일반/직원), 접속 기기 종류, 브라우저·운영체제 정보, 유입 경로, 체류 시간, 접속 계정 표시(익명 또는 선택한 이름)</td><td style="border:1px solid #dee2e6; padding:6px 8px;">접속 시 자동 수집</td></tr>
+              <tr><td style="border:1px solid #dee2e6; padding:6px 8px;">메타버스</td><td style="border:1px solid #dee2e6; padding:6px 8px;">선택한 역할, 표시 이름, 화면 속 위치, 채팅 메시지, 실시간 접속 식별값(익명 인증 값)</td><td style="border:1px solid #dee2e6; padding:6px 8px;">이용 시</td></tr>
+              <tr><td style="border:1px solid #dee2e6; padding:6px 8px;">AI 챗봇</td><td style="border:1px solid #dee2e6; padding:6px 8px;">입력창에 입력한 질문 내용</td><td style="border:1px solid #dee2e6; padding:6px 8px;">이용 시</td></tr>
+              <tr><td style="border:1px solid #dee2e6; padding:6px 8px;">직원 입장</td><td style="border:1px solid #dee2e6; padding:6px 8px;">구글 계정 이메일 주소, 직원 명단상의 이름</td><td style="border:1px solid #dee2e6; padding:6px 8px;">구글 로그인</td></tr>
+              <tr><td style="border:1px solid #dee2e6; padding:6px 8px;">이용자 기기 저장</td><td style="border:1px solid #dee2e6; padding:6px 8px;">직원 계정 힌트, 배경음악 설정, 팝업 “오늘 하루 보지 않기” 설정 (이용자 기기의 브라우저에만 저장되며 등대의집 서버로 전송되지 않음)</td><td style="border:1px solid #dee2e6; padding:6px 8px;">브라우저 저장소</td></tr>
+            </tbody>
+          </table>
+          <ul style="margin:6px 0 0 18px; padding:0;">
+            <li>위 항목은 서비스 제공과 안전한 운영을 위해 정보주체의 동의 없이 처리합니다. 법적 근거는 「개인정보 보호법」 제15조제1항제4호(서비스 제공에 필요한 처리) 및 제6호(등대의집의 정당한 이익)입니다.</li>
+            <li>챗봇 입력창과 메타버스 채팅에 <strong>본인 또는 타인의 주민등록번호, 연락처, 건강정보 등 민감한 정보를 입력하지 마십시오.</strong></li>
+            <li>주민등록번호 등 고유식별정보는 홈페이지에서 수집하지 않습니다.</li>
+          </ul>
+
+          <h4 style="color:#111; margin-top:22px; margin-bottom:8px;">3. 개인정보의 처리 및 보유 기간</h4>
+          <table style="width:100%; border-collapse:collapse; font-size:13px; margin:8px 0;">
+            <tbody>
+              <tr><td style="border:1px solid #dee2e6; padding:6px 8px; width:32%; background:#f8f9fa;">홈페이지 접속기록</td><td style="border:1px solid #dee2e6; padding:6px 8px;">1년 보관 후 지체 없이 파기합니다. 1년이 지난 기록은 정기 점검 시 파기합니다.</td></tr>
+              <tr><td style="border:1px solid #dee2e6; padding:6px 8px; background:#f8f9fa;">메타버스 접속 정보(위치·표시 이름·채팅)</td><td style="border:1px solid #dee2e6; padding:6px 8px;">접속을 종료하면 즉시 삭제됩니다. 비정상 종료로 남은 정보는 주기적으로 정리합니다.</td></tr>
+              <tr><td style="border:1px solid #dee2e6; padding:6px 8px; background:#f8f9fa;">AI 챗봇 질문</td><td style="border:1px solid #dee2e6; padding:6px 8px;">등대의집 시트·데이터베이스에는 저장하지 않습니다. 외부 AI 서비스의 처리는 10항을 따릅니다.</td></tr>
+              <tr><td style="border:1px solid #dee2e6; padding:6px 8px; background:#f8f9fa;">직원 계정 정보</td><td style="border:1px solid #dee2e6; padding:6px 8px;">직원 명단에 등재된 기간 동안 보유하고, 퇴직 등으로 명단에서 삭제되면 파기합니다.</td></tr>
+              <tr><td style="border:1px solid #dee2e6; padding:6px 8px; background:#f8f9fa;">이용자 기기 저장 정보</td><td style="border:1px solid #dee2e6; padding:6px 8px;">이용자가 직접 삭제하거나 브라우저 설정에서 지울 때까지 이용자 기기에 보관됩니다.</td></tr>
+            </tbody>
+          </table>
+
+          <h4 style="color:#111; margin-top:22px; margin-bottom:8px;">4. 개인정보의 파기 절차 및 방법</h4>
+          <ul style="margin:6px 0 0 18px; padding:0;">
+            <li>등대의집은 보유기간의 경과, 처리 목적 달성 등 개인정보가 불필요하게 되었을 때에는 지체 없이 파기합니다.</li>
+            <li>다른 법령에 따라 보존해야 하는 경우에는 별도로 분리하여 보관하고, 그 근거와 항목·기간을 3항에 적습니다. (현재 홈페이지에는 해당 사항이 없습니다.)</li>
+            <li><strong>파기절차</strong>: 파기 사유가 발생한 개인정보를 선정하고, 개인정보 보호책임자의 승인을 받아 파기합니다.</li>
+            <li><strong>파기방법</strong>: 전자적 파일 형태의 정보는 복원할 수 없도록 삭제하고, 종이 문서는 분쇄하거나 소각합니다.</li>
+          </ul>
+
+          <h4 style="color:#111; margin-top:22px; margin-bottom:8px;">5. 신청서(구글폼)를 통한 개인정보 처리</h4>
+          <p>홈페이지에는 후원신청서와 자원봉사활동일지로 연결되는 링크가 있습니다. 이 신청서에 입력하신 정보는 <strong>각 신청서의 개인정보 수집·이용 동의서에 따라</strong> 처리되며, 처리 항목·목적·보유기간·제3자 제공·위탁에 관한 사항은 신청서 화면의 동의서에서 확인하실 수 있습니다. 신청서는 구글폼으로 운영되어 입력 정보가 구글 서버에 저장됩니다(7항 참고). 문의: 사무국 (전화 041-582-4496, 이메일 light4495@light4u.kr)</p>
+
+          <h4 style="color:#111; margin-top:22px; margin-bottom:8px;">6. 개인정보 처리업무의 위탁</h4>
+          <p>등대의집은 원활한 서비스 제공을 위해 다음과 같이 개인정보 처리업무를 위탁하고 있습니다.</p>
+          <table style="width:100%; border-collapse:collapse; font-size:13px; margin:8px 0;">
+            <thead><tr style="background:#f1f3f5; color:#111;"><th style="border:1px solid #dee2e6; padding:6px 8px; text-align:left;">수탁자</th><th style="border:1px solid #dee2e6; padding:6px 8px; text-align:left;">위탁하는 업무</th></tr></thead>
+            <tbody>
+              <tr><td style="border:1px solid #dee2e6; padding:6px 8px;">Google LLC (Google Cloud, Firebase, Google Workspace)</td><td style="border:1px solid #dee2e6; padding:6px 8px;">홈페이지 데이터의 저장·처리(구글 시트, Apps Script, Firebase 실시간 데이터베이스·인증, 구글 드라이브), 직원 구글 로그인, 신청서(구글폼) 운영 — 국외 위탁·보관은 7항에서 안내합니다.</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:13px;">※ 후원금 출금 대행 등 신청서에 관한 위탁은 각 신청서의 동의서에서 안내합니다.</p>
+
+          <h4 style="color:#111; margin-top:22px; margin-bottom:8px;">7. 개인정보의 국외 이전</h4>
+          <p>등대의집은 서비스 제공을 위해 아래와 같이 개인정보를 국외로 이전(처리위탁·보관)하고 있습니다.</p>
+          <ul style="margin:6px 0 0 18px; padding:0;">
+            <li><strong>국외이전의 법적 근거</strong>: 「개인정보 보호법」 제28조의8제1항제3호(정보주체와의 계약의 체결·이행을 위한 처리위탁·보관). 같은 조 제2항 각 호의 사항을 이 방침으로 공개합니다.</li>
+            <li><strong>이전하는 개인정보 항목</strong>: 2항의 접속기록, 메타버스 이용 정보, 직원 계정(이메일), AI 챗봇 질문 내용, 구글폼 신청서 입력 정보</li>
+            <li><strong>이전되는 국가</strong>: 미국 등 구글 데이터센터가 있는 국가</li>
+            <li><strong>이전 시기 및 방법</strong>: 서비스 이용 시점에 정보통신망을 통해 전송</li>
+            <li><strong>이전받는 자</strong>: Google LLC (미국). 개인정보 관련 문의는 policies.google.com 에서 하실 수 있습니다.</li>
+            <li><strong>이전받는 자의 이용 목적 및 보유·이용 기간</strong>: 서비스 저장·처리 목적으로, 3항의 기간 동안 보유합니다.</li>
+            <li><strong>이전을 거부하는 방법·절차 및 거부의 효과</strong>: 이전을 원하지 않으시면 챗봇·메타버스 등 서비스 이용을 중단하시거나 13항의 책임자에게 요청하실 수 있습니다. 거부하시면 해당 서비스를 이용하실 수 없습니다.</li>
+          </ul>
+
+          <h4 style="color:#111; margin-top:22px; margin-bottom:8px;">8. 개인정보의 안전성 확보조치</h4>
+          <p>등대의집은 개인정보의 안전성 확보를 위해 다음과 같은 조치를 취하고 있습니다.</p>
+          <ul style="margin:6px 0 0 18px; padding:0;">
+            <li><strong>관리적 조치</strong>: 개인정보 취급자 최소화, 접근 권한 관리</li>
+            <li><strong>기술적 조치</strong>: 관리자 화면의 서버 인증과 로그인 실패 제한, 비밀값의 서버 분리 보관, 입력값 검증과 화면 출력 시 코드 실행 차단, 데이터베이스 접근 규칙 설정, 접속기록의 보관 및 점검, 정기 보안 점검</li>
+            <li><strong>물리적 조치</strong>: 자체 전산실 없이 구글 클라우드를 이용합니다.</li>
+          </ul>
+
+          <h4 style="color:#111; margin-top:22px; margin-bottom:8px;">9. 개인정보 자동 수집 장치(접속기록·쿠키 등)의 설치·운영 및 거부</h4>
+          <ul style="margin:6px 0 0 18px; padding:0;">
+            <li>등대의집은 서비스 운영을 위해 홈페이지 접속 시 <strong>접속기록(접속 일시, 기기 종류, 브라우저·운영체제, 유입 경로, 체류 시간)</strong>을 자동으로 수집합니다.</li>
+            <li>이용자 기기의 브라우저 저장소와 Firebase 익명 인증 값을 사용합니다. 목적은 직원 로그인 편의(계정 힌트), 배경음악·팝업 설정 유지, 메타버스 접속 구분입니다. 광고 목적의 쿠키나 제3자 행태정보 수집은 하지 않습니다.</li>
+            <li><strong>거부 방법</strong>: 브라우저 설정에서 쿠키·사이트 데이터를 차단하거나 삭제할 수 있습니다. 차단하시면 직원 로그인 편의나 설정 유지가 되지 않을 수 있습니다.
+              <br>· 크롬: 설정 &gt; 개인정보 및 보안 &gt; 서드 파티 쿠키 / 엣지: 설정 &gt; 쿠키 및 사이트 권한 / 사파리(모바일): 설정 &gt; 앱 &gt; 사파리 &gt; 고급 &gt; 모든 쿠키 차단</li>
+            <li>접속기록은 서비스의 안정성과 보안을 위한 기본 정보이므로 개별 거부 기능은 제공하지 않습니다. 원하지 않으시면 홈페이지 이용을 중단하셔야 합니다.</li>
+          </ul>
+
+          <h4 style="color:#111; margin-top:22px; margin-bottom:8px;">10. AI 챗봇 서비스에 관한 사항</h4>
+          <ul style="margin:6px 0 0 18px; padding:0;">
+            <li><strong>의도된 용도</strong>: 등대의집 소개, 프로그램·후원·봉사·찾아오시는 길 등 시설 안내 질문에 답하는 챗봇입니다. 상담·진단·법률·의료 판단을 위한 서비스가 아닙니다.</li>
+            <li><strong>입력 정보의 처리</strong>: 입력하신 질문은 답변 생성을 위해 구글의 생성형 AI(Gemini) 서비스로 전송됩니다. 등대의집은 질문과 답변을 자체 시트·데이터베이스에 저장하지 않습니다.</li>
+            <li><strong>구글의 활용</strong>: 챗봇에 입력한 질문은 구글의 서비스 개선에 활용될 수 있습니다. 원하지 않으시면 챗봇을 이용하지 않으시거나 13항의 책임자에게 요청해 주십시오.</li>
+            <li><strong>주의</strong>: 챗봇에는 이름·연락처·주민등록번호·건강정보 등 개인을 알아볼 수 있는 정보를 입력하지 마십시오.</li>
+            <li>챗봇은 이용자의 권리·의무에 중대한 영향을 미치는 자동화된 결정을 하지 않습니다.</li>
+          </ul>
+
+          <h4 style="color:#111; margin-top:22px; margin-bottom:8px;">11. 정보주체와 법정대리인의 권리·의무 및 행사방법</h4>
+          <ul style="margin:6px 0 0 18px; padding:0;">
+            <li>정보주체는 등대의집에 대해 언제든지 개인정보 열람·정정·삭제·처리정지 및 동의 철회를 요구할 수 있습니다. 14세 미만 아동은 법정대리인이 행사합니다.</li>
+            <li>권리 행사는 서면, 전화, 전자우편 등으로 하실 수 있으며, 등대의집은 지체 없이 조치하겠습니다. 대리인을 통하는 경우 「개인정보 처리 방법에 관한 고시」 [별지 11] 서식의 위임장이 필요합니다.</li>
+            <li>열람 및 처리정지 요구는 「개인정보 보호법」 제35조제4항, 제37조제2항에 따라 제한될 수 있고, 다른 법령에서 수집 대상으로 명시한 개인정보는 삭제를 요구할 수 없습니다.</li>
+            <li>권리 행사를 한 사람이 본인 또는 정당한 대리인인지 확인하며, 청구를 받은 날부터 10일 이내에 회신하겠습니다.</li>
+            <li>홈페이지에는 회원가입이 없어 직접 조회·수정하는 기능이 없습니다. 접속기록은 개인을 직접 식별하지 않는 형태이므로 본인임을 확인할 수 있는 경우에 한해 처리합니다.</li>
+            <li>접수·처리 부서: 사무국 (전화 041-582-4496, 이메일 light4495@light4u.kr, 주소 충남 천안시 서북구 직산읍 성진로410-11)</li>
+          </ul>
+
+          <h4 style="color:#111; margin-top:22px; margin-bottom:8px;">12. 개인정보 처리방침의 변경</h4>
+          <ul style="margin:6px 0 0 18px; padding:0;">
+            <li>이 개인정보 처리방침은 <strong>2026년 11월 24일</strong>부터 적용됩니다.</li>
+            <li>처리하는 개인정보의 항목이나 목적 등 정보주체의 권리에 중대한 영향을 미치는 변경이 있을 때에는 개정 전 또는 개정 즉시 홈페이지 공지·팝업으로 변경 전·후를 비교하여 안내합니다.</li>
+          </ul>
+          <details style="margin:10px 0 0; border:1px solid #dee2e6; border-radius:6px; padding:8px 12px;">
+            <summary style="cursor:pointer; color:#111; font-weight:700;">이전 개인정보 처리방침 보기 (2026년 11월 24일 이전 적용, 시행일 확인 불가)</summary>
+            <div style="margin-top:8px;">
+              <p><strong>1. 개인정보의 처리 목적</strong><br>등대의집은 개인정보를 고유 목적 사업 수행 및 원활한 상담 제공을 위해 처리합니다. 처리한 개인정보는 목적 이외의 용도로는 사용되지 않으며 이용 목적이 변경될 시에는 사전동의를 구할 예정입니다.</p>
+              <p><strong>2. 처리하는 개인정보의 항목</strong><br>성명, 연락처, 이메일 주소 등 상담 및 서비스 제공을 위해 필요한 최소한의 개인정보를 수집하고 있습니다.</p>
+              <p><strong>3. 개인정보의 보유 및 이용기간</strong><br>이용자의 개인정보는 원칙적으로 개인정보의 수집 및 이용목적이 달성되면 지체 없이 파기합니다.</p>
+              <p>※ 자세한 내용은 관내 게시된 상세 방침을 참고해 주시기 바랍니다.</p>
+            </div>
+          </details>
+
+          <h4 style="color:#111; margin-top:22px; margin-bottom:8px;">13. 개인정보 보호책임자</h4>
+          <p>등대의집은 개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보 처리와 관련한 정보주체의 불만처리 및 피해구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.</p>
+          <ul style="margin:6px 0 0 18px; padding:0;">
+            <li><strong>개인정보 보호책임자</strong>: 정은주 (원장)</li>
+            <li><strong>연락처</strong>: 전화 041-582-4495, 이메일 light4495@light4u.kr, 팩스 041-581-9451</li>
+            <li><strong>개인정보 보호 담당부서</strong>: 사무국 (전화 041-582-4496)</li>
+          </ul>
+          <p>정보주체는 등대의집의 서비스를 이용하시면서 발생한 모든 개인정보 보호 관련 문의, 불만처리, 피해구제 등에 관한 사항을 위 책임자 및 담당부서에 문의하실 수 있으며, 등대의집은 지체 없이 답변 및 처리하겠습니다.</p>
+
+          <h4 style="color:#111; margin-top:22px; margin-bottom:8px;">14. 권익침해 구제방법</h4>
+          <p>정보주체는 개인정보 침해로 인한 분쟁 해결, 상담 등 피해 구제를 받고자 하는 경우 아래 기관에 신청하실 수 있습니다.</p>
+          <ul style="margin:6px 0 0 18px; padding:0;">
+            <li>개인정보 분쟁조정위원회: (국번 없이) 1833-6972 (www.kopico.go.kr)</li>
+            <li>개인정보침해 신고센터: (국번 없이) 118 (privacy.kisa.or.kr)</li>
+            <li>경찰청: (국번 없이) 182 (ecrm.police.go.kr)</li>
+          </ul>
         </div>
       `;
     } else if (type === 'terms') {
