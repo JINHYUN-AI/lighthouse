@@ -118,23 +118,14 @@
         notes: logData.notes || ""
       };
 
-      const go = function (token) {
-        payload.staffToken = token || '';
-        google.script.run
-          .withSuccessHandler(function (res) { })
-          .withFailureHandler(function (err) {
-            console.warn("모니터링 로그 전송 실패 (무시):", err);
-          })
-          .recordMonitoringLog(payload);
-      };
-      // 직원 표시는 서버가 구글 로그인 토큰을 확인한 경우에만 붙는다(2026-11-24). 토큰은 약 1시간 뒤 만료되므로 가능하면 새로 받는다.
-      let tokenPromise = null;
-      try {
-        const cu = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
-        if (cu && !cu.isAnonymous) tokenPromise = cu.getIdToken();
-      } catch (e) { }
-      if (tokenPromise) tokenPromise.then(go, function () { go(state.staffIdToken); });
-      else go(state.staffIdToken);
+      // 직원 표시는 서버가 로그인 확인 때 발급한 서명된 확인증(staffSession)을 검증한 경우에만 붙는다(2026-11-24).
+      payload.staffSession = state.staffSession || '';
+      google.script.run
+        .withSuccessHandler(function (res) { })
+        .withFailureHandler(function (err) {
+          console.warn("모니터링 로그 전송 실패 (무시):", err);
+        })
+        .recordMonitoringLog(payload);
     },
 
     logHomepageAccess: function () {
@@ -655,7 +646,7 @@
         .withSuccessHandler(res => {
           if (res && res.success && res.name) {
             state.userEmail = res.email;
-            state.staffIdToken = idToken; // 접속기록에서 서버가 직원 여부를 확인하는 데 쓴다(메모리에만 보관, 저장하지 않음)
+            state.staffSession = res.session || ''; // 서버가 로그인 확인 때 발급한 서명된 확인증. 접속기록에서 직원 여부 확인에 쓴다(메모리에만 보관, 저장하지 않음)
             try { localStorage.setItem('staffEmailHint', res.email); } catch (e) { }
             onOk(res.name);
           } else if (res && res.success) {
@@ -2997,8 +2988,9 @@
       document.getElementById('meta-recruit-date').innerText = recruitData.date ? "등록일: " + recruitData.date.substring(0, 10) : "";
       document.getElementById('meta-recruit-content').innerText = recruitData.content || "";
 
-      const attachmentHtml = recruitData.attachment
-        ? `<a href="${recruitData.attachment}" target="_blank" class="meta-recruit-btn">안내문/양식(첨부파일) 다운로드</a>`
+      const attUrl = /^https?:\/\//i.test(String(recruitData.attachment || '')) ? escapeChatHtml_(recruitData.attachment) : '';
+      const attachmentHtml = attUrl
+        ? `<a href="${attUrl}" target="_blank" rel="noopener noreferrer" class="meta-recruit-btn">안내문/양식(첨부파일) 다운로드</a>`
         : '';
       document.getElementById('meta-recruit-attachment').innerHTML = attachmentHtml;
     }
@@ -3099,7 +3091,7 @@
       html += `
         <li onclick="openNoticeDetail(${originalIndex})">
           <div>
-            <div class="meta-notice-item-title">${badge}[${typeStr}] ${n.title}</div>
+            <div class="meta-notice-item-title">${badge}[${escapeChatHtml_(typeStr)}] ${escapeChatHtml_(n.title)}</div>
             <div class="meta-notice-item-date">${dateStr}</div>
           </div>
         </li>
@@ -4535,14 +4527,14 @@
           if (isIndividual) {
             // 개인 후원자: 이름 + 랜덤 배경 (인덱스 기반 분산)
             const bgUrl = nameBgs[(idx + col) % nameBgs.length];
-            html += `<div class="hof-ticker-item name-only" style="background-image: url('${bgUrl}');">${item.name}</div>`;
+            html += `<div class="hof-ticker-item name-only" style="background-image: url('${bgUrl}');">${escapeChatHtml_(item.name)}</div>`;
           } else {
             // 기업 후원자: 이미지 카드 노출
             const linkAttr = item.link ? `onclick="window.open('${item.link}', '_blank')"` : '';
             const logoUrl = item.logoUrl || 'https://via.placeholder.com/300x150?text=Lighthouse';
             html += `
               <div class="hof-ticker-item" ${linkAttr}>
-                <img src="${logoUrl}" alt="${item.name}">
+                <img src="${escapeChatHtml_(logoUrl)}" alt="${escapeChatHtml_(item.name)}">
               </div>
             `;
           }
@@ -4608,8 +4600,8 @@
           ${newBadgeHtml}
           <img src="${item.url}" loading="lazy" alt="Gallery Image">
           <div class="gallery-overlay">
-            <div class="gallery-title-text">${item.name}</div>
-            <div class="gallery-date-text">${item.date}</div>
+            <div class="gallery-title-text">${escapeChatHtml_(item.name)}</div>
+            <div class="gallery-date-text">${escapeChatHtml_(item.date)}</div>
           </div>
         </div>
       `;
@@ -4691,7 +4683,7 @@
     const navTarget = document.getElementById('about-nav-target');
     let navHtml = '';
     data.forEach((item, idx) => {
-      navHtml += `<button class="a-nav-btn ${idx === currentAboutIndex ? 'active' : ''}" onclick="switchAbout(${idx})">${item.title}</button>`;
+      navHtml += `<button class="a-nav-btn ${idx === currentAboutIndex ? 'active' : ''}" onclick="switchAbout(${idx})">${escapeChatHtml_(item.title)}</button>`;
     });
 
     if (navTarget) navTarget.innerHTML = navHtml;
@@ -4857,7 +4849,7 @@
     const navTarget = document.getElementById('programs-nav-target');
     let navHtml = '';
     data.forEach((item, idx) => {
-      navHtml += `<button class="p-nav-btn ${idx === currentProgramIndex ? 'active' : ''}" onclick="switchProgram(${idx})">${item.title}</button>`;
+      navHtml += `<button class="p-nav-btn ${idx === currentProgramIndex ? 'active' : ''}" onclick="switchProgram(${idx})">${escapeChatHtml_(item.title)}</button>`;
     });
 
     if (navTarget) navTarget.innerHTML = navHtml;
@@ -4899,7 +4891,7 @@
         <div id="${subId}" class="program-slide ${idx === currentProgramIndex ? 'active' : ''}">
           <div class="p-card-content">
             <div class="p-card-info">
-              <h3 class="p-card-title">${item.title}</h3>
+              <h3 class="p-card-title">${escapeChatHtml_(item.title)}</h3>
             </div>
             <div class="p-card-media">
               ${mediaHtml}
@@ -5090,12 +5082,12 @@
 
       html += `
         <tr class="${rowClass}" onclick="openNoticeDetail(${realIdx})">
-          <td>${item.isPinned ? '📌' : item.num}</td>
-          <td><span class="category-badge" style="${colorStyle}">${item.type}</span></td>
+          <td>${item.isPinned ? '📌' : escapeChatHtml_(item.num)}</td>
+          <td><span class="category-badge" style="${colorStyle}">${escapeChatHtml_(item.type)}</span></td>
           <td style="text-align:left; padding-left:15px;">
-            ${pinnedTag}${item.title}${newTag}
+            ${pinnedTag}${escapeChatHtml_(item.title)}${newTag}
           </td>
-          <td>${item.date.split(' ')[0]}</td>
+          <td>${escapeChatHtml_(String(item.date || '').split(' ')[0])}</td>
           <td>${item.attachment ? '<span class="badge-file">FILE</span>' : '-'}</td>
         </tr>
       `;
@@ -5245,12 +5237,12 @@
       html += `
         <a class="newsletter-card" href="${item.link || '#'}" target="_blank">
           <div class="newsletter-thumb">
-            <img src="${thumbUrl}" alt="${item.title}" loading="lazy">
+            <img src="${escapeChatHtml_(thumbUrl)}" alt="${escapeChatHtml_(item.title)}" loading="lazy">
             <div class="newsletter-overlay"><span class="nl-view-btn">VIEW</span></div>
           </div>
           <div class="newsletter-info">
-            <div class="newsletter-title" title="${item.title}">${item.title}</div>
-            <div class="newsletter-date">${item.date}</div>
+            <div class="newsletter-title" title="${escapeChatHtml_(item.title)}">${escapeChatHtml_(item.title)}</div>
+            <div class="newsletter-date">${escapeChatHtml_(item.date)}</div>
           </div>
         </a>
       `;
@@ -5544,10 +5536,10 @@
           <table style="width:100%; border-collapse:collapse; font-size:13px; margin:8px 0;">
             <thead><tr style="background:#f1f3f5; color:#111;"><th style="border:1px solid #dee2e6; padding:6px 8px; text-align:left;">구분</th><th style="border:1px solid #dee2e6; padding:6px 8px; text-align:left;">처리 항목</th><th style="border:1px solid #dee2e6; padding:6px 8px; text-align:left;">수집 방법</th></tr></thead>
             <tbody>
-              <tr><td style="border:1px solid #dee2e6; padding:6px 8px;">홈페이지 접속</td><td style="border:1px solid #dee2e6; padding:6px 8px;">접속 일시, 접속 구분(홈페이지/메타버스), 방문자 유형(일반/직원), 접속 기기 종류, 브라우저·운영체제 정보, 유입 경로, 체류 시간, 접속 계정 표시(익명 또는 선택한 이름)</td><td style="border:1px solid #dee2e6; padding:6px 8px;">접속 시 자동 수집</td></tr>
+              <tr><td style="border:1px solid #dee2e6; padding:6px 8px;">홈페이지 접속</td><td style="border:1px solid #dee2e6; padding:6px 8px;">접속 일시, 접속 구분(홈페이지/메타버스), 방문자 유형(일반/직원), 접속 기기 종류, 브라우저·운영체제 정보, 유입 경로, 체류 시간, 접속 계정 표시(일반 방문자는 익명 또는 선택한 이름, 직원은 확인된 이름과 이메일)</td><td style="border:1px solid #dee2e6; padding:6px 8px;">접속 시 자동 수집</td></tr>
               <tr><td style="border:1px solid #dee2e6; padding:6px 8px;">메타버스</td><td style="border:1px solid #dee2e6; padding:6px 8px;">선택한 역할, 표시 이름, 화면 속 위치, 채팅 메시지, 실시간 접속 식별값(익명 인증 값)</td><td style="border:1px solid #dee2e6; padding:6px 8px;">이용 시</td></tr>
               <tr><td style="border:1px solid #dee2e6; padding:6px 8px;">AI 챗봇</td><td style="border:1px solid #dee2e6; padding:6px 8px;">입력창에 입력한 질문 내용</td><td style="border:1px solid #dee2e6; padding:6px 8px;">이용 시</td></tr>
-              <tr><td style="border:1px solid #dee2e6; padding:6px 8px;">직원 입장</td><td style="border:1px solid #dee2e6; padding:6px 8px;">구글 계정 이메일 주소, 직원 명단상의 이름</td><td style="border:1px solid #dee2e6; padding:6px 8px;">구글 로그인</td></tr>
+              <tr><td style="border:1px solid #dee2e6; padding:6px 8px;">직원 입장</td><td style="border:1px solid #dee2e6; padding:6px 8px;">구글 계정 이메일 주소, 직원 명단상의 이름 (직원의 접속기록에도 함께 기록됩니다)</td><td style="border:1px solid #dee2e6; padding:6px 8px;">구글 로그인</td></tr>
               <tr><td style="border:1px solid #dee2e6; padding:6px 8px;">이용자 기기 저장</td><td style="border:1px solid #dee2e6; padding:6px 8px;">직원 계정 힌트, 배경음악 설정, 팝업 “오늘 하루 보지 않기” 설정 (이용자 기기의 브라우저에만 저장되며 등대의집 서버로 전송되지 않음)</td><td style="border:1px solid #dee2e6; padding:6px 8px;">브라우저 저장소</td></tr>
             </tbody>
           </table>
@@ -5633,7 +5625,7 @@
             <li>권리 행사는 서면, 전화, 전자우편 등으로 하실 수 있으며, 등대의집은 지체 없이 조치하겠습니다. 대리인을 통하는 경우 「개인정보 처리 방법에 관한 고시」 [별지 11] 서식의 위임장이 필요합니다.</li>
             <li>열람 및 처리정지 요구는 「개인정보 보호법」 제35조제4항, 제37조제2항에 따라 제한될 수 있고, 다른 법령에서 수집 대상으로 명시한 개인정보는 삭제를 요구할 수 없습니다.</li>
             <li>권리 행사를 한 사람이 본인 또는 정당한 대리인인지 확인하며, 청구를 받은 날부터 10일 이내에 회신하겠습니다.</li>
-            <li>홈페이지에는 회원가입이 없어 직접 조회·수정하는 기능이 없습니다. 접속기록은 개인을 직접 식별하지 않는 형태이므로 본인임을 확인할 수 있는 경우에 한해 처리합니다.</li>
+            <li>홈페이지에는 회원가입이 없어 직접 조회·수정하는 기능이 없습니다. 일반 방문자의 접속기록은 익명이거나 선택한 이름이라 개인을 직접 식별하기 어렵기 때문에 본인임을 확인할 수 있는 경우에 한해 처리합니다. 직원의 접속기록에는 이름과 이메일이 함께 기록되므로 직원은 본인 확인 후 열람·삭제를 요청할 수 있습니다.</li>
             <li>접수·처리 부서: 사무국 (전화 041-582-4496, 이메일 light4495@light4u.kr, 주소 충남 천안시 서북구 직산읍 성진로410-11)</li>
           </ul>
 
@@ -6044,12 +6036,12 @@
       noticeEl.className = 'meta-drop-notice';
       if (n.id === 3) noticeEl.classList.add('notice-pink'); // 직원채용은 핑크색
 
-      const contentHtml = String(n.content || '').replace(/\n/g, '<br>');
+      const contentHtml = escapeChatHtml_(n.content).replace(/\n/g, '<br>');
 
       noticeEl.innerHTML = `
         <div class="drop-notice-header">
           <span class="drop-notice-icon">${n.id === 3 ? '📋' : '🔔'}</span>
-          <span class="drop-notice-title">${n.title || '공지사항'}</span>
+          <span class="drop-notice-title">${escapeChatHtml_(n.title || '공지사항')}</span>
         </div>
         <div class="drop-notice-body">${contentHtml}</div>
       `;
@@ -6543,7 +6535,7 @@
       const bubble = document.getElementById('avatar-speech-bubble');
       if (!bubble) return;
       bubble.classList.remove('show');
-      bubble.innerHTML = text;
+      bubble.textContent = text; // AI 안내 문구는 글자로만 표시(HTML 해석 차단)
       setTimeout(() => bubble.classList.add('show'), 100);
     }
 
